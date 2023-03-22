@@ -93,4 +93,12 @@ class FsbackendApplicationTests {
 		.andExpect(status().isNoContent());
 	}
 
+	@Test
+	public void checkPersonSearch() throws Exception {
+		this.mockMvc.perform(get("/person-search/new")
+		.accept(MediaType.APPLICATION_JSON))
+		.andDo(print())
+		.andExpect(status().isOk());
+	}
+
 }
