@@ -3,6 +3,8 @@ package org.sailplatform.fsbackend.controller;
 import java.util.List;
 import java.util.Optional;
 
+import javax.validation.Valid;
+
 import org.sailplatform.fsbackend.model.Person;
 import org.sailplatform.fsbackend.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,7 @@ public class PersonController {
 	}
 
     @PostMapping("/add")
-	public Person add(@RequestBody Person toAdd) {
+	public Person add(@Valid @RequestBody Person toAdd) {
 		return personService.add(toAdd);
 	}
 
@@ -42,13 +44,8 @@ public class PersonController {
 		return personService.findByFirstName(firstName);
 	}
 
-	@PostMapping("/person/{id}")
-	public Person get(@RequestBody Person toEdit) {
-		return personService.add(toEdit);
-	}
-
 	@PutMapping("/person/{id}")
-	public Person replacePerson(@RequestBody Person newPerson, @PathVariable Long id) {
+	public Person replacePerson(@Valid @RequestBody Person newPerson, @PathVariable Long id) {
 		return personService.update(id, newPerson);
 	}
 

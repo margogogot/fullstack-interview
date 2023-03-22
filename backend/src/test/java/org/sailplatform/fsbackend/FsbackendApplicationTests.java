@@ -1,69 +1,96 @@
 package org.sailplatform.fsbackend;
+import java.util.*;
+import org.springframework.http.MediaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.List;
-import java.util.Optional;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import org.sailplatform.fsbackend.model.Person;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.sailplatform.fsbackend.service.PersonService;
+import org.sailplatform.fsbackend.controller.PersonController;
 
 @SpringBootTest
+@AutoConfigureMockMvc
 class FsbackendApplicationTests {
+	@MockBean 
+    PersonService personServiceMock;
+
+	@Autowired
+	private MockMvc mockMvc;
+
+	@Autowired
+	private PersonController controller;
 
 	@Test
 	void contextLoads() {
-	}
-
-    PersonService personService;
-
-    @Autowired
-    void setPersonService(PersonService personService) {
-        this.personService = personService;
-    }
-
-	@Test
-    void add() {
-    	Person person = personService.add(new Person("Marge", "Simpson"));
-       	Assertions.assertNotNull(person);
-    }
-
-	@Test
-    void findById() {
-		Person newPerson = personService.add(new Person("Marge", "Simpson"));
-        Optional<Person> person = personService.loadPersonById(newPerson.getId());
-       	Assertions.assertTrue(person.isPresent());
-    }
-
-	@Test
-	void findAll() {
-		List<Person> people = personService.getAll();
-		Assertions.assertNotNull(people);
+		assertThat(controller).isNotNull();
 	}
 
 	@Test
-	void updateOne() {
-		Person newPerson = personService.add(new Person("Marge", "Simpson"));
-		Person person = personService.update(newPerson.getId(), new Person("Lisa", "Simpson"));
-		Assertions.assertNotNull(person);
+	public void checkGetAllPersons() throws Exception {
+		this.mockMvc.perform(get("/all")).andDo(print()).andExpect(status().isOk())
+		.andExpect(status().isOk());
 	}
 
 	@Test
-	void findByFirstName() {
-		List<Person> people = personService.findByFirstName(new String("Lisa"));
-		Assertions.assertNotNull(people);
+	public void checkGetAddPerson() throws Exception {
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		Map<String,Object> body = new HashMap<>();
+		body.put("firstName","new");
+		body.put("lastName","Person");
+
+		this.mockMvc.perform(post("/add")
+		.contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(body))
+		.accept(MediaType.APPLICATION_JSON))
+		.andDo(print())
+		.andExpect(status().isOk());
 	}
 
 	@Test
-	void deleteOne() {
-		Person newPerson = personService.add(new Person("Marge", "Simpson"));
-		personService.deletePersonById(newPerson.getId());
-		Optional<Person> person = personService.loadPersonById(newPerson.getId());
-		Assertions.assertFalse(person.isPresent());
+	public void checkGetPerson() throws Exception {
+		this.mockMvc.perform(get("/person/11")
+		.accept(MediaType.APPLICATION_JSON))
+		.andDo(print())
+		.andExpect(status().isOk());
 	}
 
+	@Test
+	public void checkUpdatePerson() throws Exception {
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		Map<String,Object> body = new HashMap<>();
+		body.put("firstName","new");
+		body.put("lastName","Person 2");
+
+		this.mockMvc.perform(put("/person/11")
+		.contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(body))
+		.accept(MediaType.APPLICATION_JSON))
+		.andDo(print())
+		.andExpect(status().isOk());
+	}
+
+	@Test
+	public void checkDeletePerson() throws Exception {
+		this.mockMvc.perform(delete("/person/11")
+		.accept(MediaType.APPLICATION_JSON))
+		.andDo(print())
+		.andExpect(status().isNoContent());
+	}
 
 }
